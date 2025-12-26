@@ -1,1 +1,6 @@
 beat_v2
+*.swp
+*.swo
+.DS_Store
+.vscode/
+node_modules/
