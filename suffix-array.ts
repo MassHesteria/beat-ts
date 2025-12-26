@@ -3,27 +3,30 @@ export type SuffixArray = Uint8Array;
 // suffix array via induced sorting
 // O(n)
 export const suffix_array = (data: Uint8Array, characters: number = 256): SuffixArray => {
-  const size = data.length;
+  const size = data?.length ?? 0;
   if(size == 0) return new Uint8Array([0]);  //required to avoid out-of-bounds accesses
   if(size == 1) return new Uint8Array([1, 0]);  //not strictly necessary; but more performant
 
   //0 = S-suffix (sort before next suffix), 1 = L-suffix (sort after next suffix)
-  const types: boolean[] = new Array(size + 1);
+  const types: boolean[] = new Array(size + 1).fill(false);
 
   types[size - 0] = false;  //empty suffix is always S-suffix
   types[size - 1] = true;   //last suffix is always L-suffix compared to empty suffix
-  /*for(uint n : reverse(range(size - 1))) {
-    if(data[n] < data[n + 1]) {
-      types[n] = 0;  //this suffix is smaller than the one after it
-    } else if(data[n] > data[n + 1]) {
-      types[n] = 1;  //this suffix is larger than the one after it
+  for(let n = size - 2; n >= 0; n--) {
+    const curr = data[n] as number;
+    const next = data[n + 1] as number;
+    if(curr < next) {
+      types[n] = false;  //this suffix is smaller than the one after it
+    } else if(curr > next) {
+      types[n] = true;  //this suffix is larger than the one after it
     } else {
-      types[n] = types[n + 1];  //this suffix will be the same as the one after it
+      types[n] = types[n + 1] as boolean;  //this suffix will be the same as the one after it
     }
   }
+  console.log(types.map(x => x ? 1 : 0).join(""));
 
   //left-most S-suffix
-  auto isLMS = [&](int n) -> bool {
+  /*auto isLMS = [&](int n) -> bool {
     if(n == 0) return 0;  //no character to the left of the first suffix
     return !types[n] && types[n - 1];  //true if this is the start of a new S-suffix
   };
@@ -48,6 +51,7 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
     const cnt = counts[idx] as number;
     counts[idx] = cnt + 1;
   }
+  console.log(counts.join(""));
 
   //bucket sorting start offsets
   /*vector<uint> heads;
