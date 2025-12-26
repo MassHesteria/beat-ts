@@ -1,21 +1,45 @@
 const args = Bun.argv.slice(2);
 
-const create = (patchFile: string, originalFile: string, modifiedFile: string) => {
-  // Implementation for creating a bps patch would go here
-  console.log(`Creating patch file: ${patchFile} from original: ${originalFile} and modified: ${modifiedFile}`);
+const create = (source: Uint8Array, target: Uint8Array) => {
+  let beat: number[] = [];
+  const write = (byte: number) => {
+    beat.push(byte & 0xFF);
+  }
+
+  write(0x42), write(0x50), write(0x53), write(0x31);
+
+  const sourceHash = Bun.hash.crc32(source);
+  write(sourceHash);
+  write(sourceHash >> 8);
+  write(sourceHash >> 16);
+  write(sourceHash >> 24);
+  const targetHash = Bun.hash.crc32(target);
+  write(targetHash);
+  write(targetHash >> 8);
+  write(targetHash >> 16);
+  write(targetHash >> 24);
+  const beatHash = Bun.hash.crc32(new Uint8Array(beat));
+  write(beatHash);
+  write(beatHash >> 8);
+  write(beatHash >> 16);
+  write(beatHash >> 24);
+  return new Uint8Array(beat);
 }
 
 if (args.includes("-create:bps")) {
   const index = args.indexOf("-create:bps");
-  console.log("Creating bps...");
   const patchFile = args[index + 1];
-  const originalFile = args[index + 2];
-  const modifiedFile = args[index + 3];
-  if (patchFile === undefined || originalFile === undefined || modifiedFile === undefined) {
+  const originalName = args[index + 2];
+  const modifiedName = args[index + 3];
+  if (patchFile === undefined || originalName === undefined || modifiedName === undefined) {
     console.log("Error: Missing arguments for -create:bps. Usage: -create:bps <patchFile> <originalFile> <modifiedFile>");
     process.exit(1);
   }
-  create(patchFile, originalFile, modifiedFile);
+  const originalData = await Bun.file(originalName).bytes();
+  const modifiedData = await Bun.file(modifiedName).bytes();
+  const patchData = create(originalData, modifiedData);
+  await Bun.write(patchFile, patchData);
+  console.log("patch created successfully");
 
 } else if (args.includes("-apply:bps")) {
   console.log("UNIMPLEMENTED: Applying bps...");
