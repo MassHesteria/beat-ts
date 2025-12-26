@@ -1,3 +1,5 @@
+import { suffix_array, suffix_array_lpf } from "./suffix-array";
+
 const args = Bun.argv.slice(2);
 
 const create = (source: Uint8Array, target: Uint8Array) => {
@@ -15,8 +17,13 @@ const create = (source: Uint8Array, target: Uint8Array) => {
       data--;
     }
   };
+
   write(0x42), write(0x50), write(0x53), write(0x31);
   encode(source.length), encode(target.length), encode(0);
+  //TODO: write manifest
+
+  const sourceArray = suffix_array(source);
+  const targetArray = suffix_array_lpf(suffix_array(target));
 
   const sourceHash = Bun.hash.crc32(source);
   write(sourceHash);
