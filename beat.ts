@@ -6,7 +6,17 @@ const create = (source: Uint8Array, target: Uint8Array) => {
     beat.push(byte & 0xFF);
   }
 
+  const encode = (data: number) => {
+    while(true) {
+      const x = data & 0x7f;
+      data >>= 7;
+      if(data == 0) { write(0x80 | x); break; }
+      write(x);
+      data--;
+    }
+  };
   write(0x42), write(0x50), write(0x53), write(0x31);
+  encode(source.length), encode(target.length), encode(0);
 
   const sourceHash = Bun.hash.crc32(source);
   write(sourceHash);
