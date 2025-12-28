@@ -162,19 +162,20 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
   console.log(summaryOffsets.join(""));
 
   //make the summary suffix array
-  const summaries: number[] = [];
-  /*if(summaryData.size() == summaryCharacters) {
+  let summaries: number[];
+  if(summaryData.length == summaryCharacters) {
     //simple bucket sort when every character in summaryData appears only once
-    summaries.resize(summaryData.size() + 1, (int)-1);
-    summaries[0] = summaryData.size();  //always include the empty suffix at the beginning
-    for(int x : range(summaryData.size())) {
-      int y = summaryData[x];
+    summaries = new Array(summaryData.length).fill(-1);
+    summaries[0] = summaryData.length;  //always include the empty suffix at the beginning
+    for(let x = 0; x < summaryData.length; x++) {
+      const y = summaryData[x];
+      //@ts-ignore
       summaries[y + 1] = x;
     }
   } else {
     //recurse until every character in summaryData is unique ...
-    summaries = induced_sort<int>({summaryData.data(), summaryData.size()}, summaryCharacters);
-  }*/
+    summaries = induced_sort(summaryData, summaryCharacters);
+  }
 
   suffixes.fill(-1);  //reuse existing buffer for accurate sort
 
