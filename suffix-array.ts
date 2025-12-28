@@ -125,24 +125,26 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
 
   //analyze data for the summary suffix array
   const names: number[] = new Array(size + 1).fill(-1);
-  /*vector<int> names;
-  names.resize(size + 1, (int)-1);
 
-  uint currentName = 0;  //keep a count to tag each unique LMS-substring with unique IDs
-  auto lastLMSOffset = suffixes[0];  //location in the original data of the last checked LMS suffix
+  let currentName = 0;  //keep a count to tag each unique LMS-substring with unique IDs
+  let lastLMSOffset = suffixes[0];  //location in the original data of the last checked LMS suffix
   names[lastLMSOffset] = currentName;  //the first LMS-substring is always the empty suffix entry, at position 0
 
-  for(uint n : range(1, size + 1)) {
-    auto offset = suffixes[n];
+  for(let n = 1; n < size + 1; n++) {
+    const offset = suffixes[n];
+    //@ts-ignore
     if(!isLMS(offset)) continue;  //only LMS suffixes are important
 
     //if this LMS suffix starts with a different LMS substring than the last suffix observed ...
+    //@ts-ignore
     if(!isEqual(lastLMSOffset, offset)) currentName++;  //then it gets a new name
+    //@ts-ignore
     lastLMSOffset = offset;  //keep track of the new most-recent LMS suffix
     names[lastLMSOffset] = currentName;  //store the LMS suffix name where the suffix appears at in the original data
   }
+  console.log(names.join(""));
 
-  vector<int> summaryOffsets;
+  /*vector<int> summaryOffsets;
   vector<int> summaryData;
   for(uint n : range(size + 1)) {
     if(names[n] == -1) continue;
