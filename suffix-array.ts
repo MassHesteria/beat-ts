@@ -1,11 +1,11 @@
-export type SuffixArray = Uint8Array;
+export type SuffixArray = number[];
 
 // suffix array via induced sorting
 // O(n)
 export const suffix_array = (data: Uint8Array, characters: number = 256): SuffixArray => {
   const size = data?.length ?? 0;
-  if(size == 0) return new Uint8Array([0]);  //required to avoid out-of-bounds accesses
-  if(size == 1) return new Uint8Array([1, 0]);  //not strictly necessary; but more performant
+  if(size == 0) return [0];  //required to avoid out-of-bounds accesses
+  if(size == 1) return [1, 0];  //not strictly necessary; but more performant
 
   //0 = S-suffix (sort before next suffix), 1 = L-suffix (sort after next suffix)
   const types: boolean[] = new Array(size + 1).fill(false);
@@ -80,7 +80,7 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   };
 
   //inaccurate LMS bucket sort
-  const suffixes = new Uint8Array(size + 1).fill(255);
+  const suffixes: number[] = new Array(size + 1).fill(-1);
 
   getTails();
   for(let n = 0; n < size; n++) {
@@ -124,6 +124,7 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   console.log(suffixes.join(""));
 
   //analyze data for the summary suffix array
+  const names: number[] = new Array(size + 1).fill(-1);
   /*vector<int> names;
   names.resize(size + 1, (int)-1);
 
