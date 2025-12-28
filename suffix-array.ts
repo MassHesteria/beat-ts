@@ -1,14 +1,48 @@
 export type SuffixArray = {
+  input: Uint8Array;
   sa: number[];
   phi?: number[];
+  plcp?: number[];
+  lengths?: number[];
+  offsets?: number[];
 };
+
+// longest previous factor
+// O(n)
+const lpf = (array: SuffixArray): SuffixArray => {
+  if (!array.phi) {
+    array.phi = suffix_array_phi(array.sa);
+  }
+  if (array.phi) {
+    console.log('phi:', array.phi.join(""));
+  }
+  if(!array.lengths || !array.offsets) {
+    array.lengths = [];
+    array.offsets = [];
+    array.plcp = [];
+    suffix_array_lpf(array.lengths, array.offsets, array.phi, array.plcp, array.input);
+  }
+  if (array.lengths && array.offsets) {
+    //console.log("lengths size:", array.lengths.length);
+    console.log("lengths:", array.lengths.join(""));
+    //console.log("offsets size:", array.offsets.length);
+    console.log("offsets:", array.offsets.join(""));
+    console.log("plcp:", array.plcp?.join("") || "");
+  }
+  return array;
+}
 
 // suffix array via induced sorting
 // O(n)
-export const suffix_array = (data: Uint8Array): SuffixArray => {
-  return {
-    sa: induced_sort([...data])
+export const suffix_array = (data: Uint8Array, lcf: boolean = false): SuffixArray => {
+  const arr: SuffixArray = {
+    input: data,
+    sa: induced_sort([...data]),
+  };
+  if (lcf) {
+    lpf(arr);
   }
+  return arr;
 };
 
 export const induced_sort = (data: number[], characters: number = 256): number[] => {
@@ -204,12 +238,82 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
 
 // longest previous factor
 // O(n)
-export const suffix_array_lpf = (array: SuffixArray): SuffixArray => {
-  array.phi = suffix_array_phi(array.sa);
-  return array;
+// optional: plcp
+const suffix_array_lpf = (lengths: number[], offsets: number[], phi: number[], plcp: number[], input: Uint8Array) => {
+  let k = 0, size = input.length;
+  const resize = (arr: number[], newSize: number, defaultValue: number) => {
+    arr.length = 0;
+    while (arr.length < newSize) {
+      arr.push(defaultValue);
+    }
+  }
+
+  resize(lengths, size + 1, -1);
+  //console.log("lengths init:" , lengths.join(""));
+  resize(offsets, size + 1, -1);
+  //console.log("offsets init:" , offsets.join(""));
+
+  const recurse = (i: number, j: number, k: number) => {
+    //@ts-ignore
+    if(lengths[i] < 0) {
+      lengths[i] = k;
+      offsets[i] = j;
+    //@ts-ignore
+    } else if(lengths[i] < k) {
+      //@ts-ignore
+      if(offsets[i] > j) {
+        //@ts-ignore
+        recurse(offsets[i], j, lengths[i]);
+      } else {
+        //@ts-ignore
+        recurse(j, offsets[i], lengths[i]);
+      }
+      lengths[i] = k;
+      offsets[i] = j;
+    } else {
+        //@ts-ignore
+      if(offsets[i] > j) {
+        //@ts-ignore
+        recurse(offsets[i], j, k);
+      } else {
+        //@ts-ignore
+        recurse(j, offsets[i], k);
+      }
+    }
+  };
+
+  for(let i = 0; i < size; i++) {
+    const j = phi[i];
+    if(plcp && plcp.length > 0) {
+      //@ts-ignore
+      k = plcp[i];
+    }
+    else {
+      //@ts-ignore
+      while(i + k < size && j + k < size && input[i + k] == input[j + k]) {
+        k++;
+      }
+    }
+    //@ts-ignore
+    if(i > j) {
+    //console.log("recurse a", i, j, k);
+    //@ts-ignore
+      recurse(i, j, k);
+    } else {
+    //console.log("recurse b", i, j, k);
+    //@ts-ignore
+      recurse(j, i, k);
+    }
+    if(k) {
+      k--;
+    }
+  }
+
+  lengths[0] = 0;
+  offsets[0] = 0;
 }
 
-export const suffix_array_phi = (sa: number[]): number[] => {
+const suffix_array_phi = (sa: number[]): number[] => {
   const phi: number[] = new Array(sa.length);
   //@ts-ignore
   phi[sa[0]] = 0;
