@@ -1,4 +1,4 @@
-import { suffix_array } from "./suffix-array";
+import { suffix_array, suffix_array_find, suffix_array_previous } from "./suffix-array";
 
 const args = Bun.argv.slice(2);
 
@@ -24,6 +24,67 @@ const create = (source: Uint8Array, target: Uint8Array) => {
 
   const sourceArray = suffix_array(source);
   const targetArray = suffix_array(target, true);
+
+  const SourceRead = 0, TargetRead = 1, SourceCopy = 2, TargetCopy = 3;
+  let outputOffset = 0, sourceRelativeOffset = 0, targetRelativeOffset = 0;
+
+  let targetReadLength = 0;
+  const flush = () => {
+    if(!targetReadLength) return;
+    encode(TargetRead | ((targetReadLength - 1) << 2));
+    let offset = outputOffset - targetReadLength;
+    while(targetReadLength) {
+      //@ts-ignore
+      write(target[offset++]);
+      targetReadLength--;
+    }
+  };
+
+  let overlap = Math.min(source.length, target.length);
+  while(outputOffset < target.length) {
+    let mode = TargetRead, longestLength = 3, longestOffset = 0;
+    let length = 0, offset = outputOffset;
+
+    while(offset < overlap) {
+      if(source[offset] != target[offset]) {
+        break;
+      }
+      length++, offset++;
+    }
+    if(length > longestLength) {
+      mode = SourceRead, longestLength = length;
+    }
+
+    suffix_array_find({ length, offset }, sourceArray.sa, sourceArray.input, target.slice(outputOffset));
+    if(length > longestLength) {
+      mode = SourceCopy, longestLength = length, longestOffset = offset;
+    }
+
+    suffix_array_previous(targetArray, { length, offset }, outputOffset);
+    if(length > longestLength) {
+      mode = TargetCopy, longestLength = length, longestOffset = offset;
+    }
+
+    if(mode == TargetRead) {
+      targetReadLength++;  //queue writes to group sequential commands
+      outputOffset++;
+    } else {
+      flush();
+      encode(mode | ((longestLength - 1) << 2));
+      if(mode == SourceCopy) {
+        let relativeOffset = longestOffset - sourceRelativeOffset;
+        sourceRelativeOffset = longestOffset + longestLength;
+        encode(relativeOffset < 0 | Math.abs(relativeOffset) << 1);
+      }
+      if(mode == TargetCopy) {
+        let relativeOffset = longestOffset - targetRelativeOffset;
+        targetRelativeOffset = longestOffset + longestLength;
+        encode(relativeOffset < 0 | Math.abs(relativeOffset) << 1);
+      }
+      outputOffset += longestLength;
+    }
+  }
+  flush();
 
   const sourceHash = Bun.hash.crc32(source);
   write(sourceHash);

@@ -45,6 +45,50 @@ export const suffix_array = (data: Uint8Array, lcf: boolean = false): SuffixArra
   return arr;
 };
 
+export const suffix_array_find = (inouts: { length: number, offset: number }, sa: number[], input: Uint8Array, match: Uint8Array): boolean => {
+  inouts.length = 0, inouts.offset = 0;
+  let l = 0, r = input.length;
+
+  while(l < r - 1) {
+    let m = l + r >> 1;
+    let s = sa[m];
+
+    let k = 0;
+    while(k < match.length && s + k < input.length) {
+      if(match[k] != input[s + k]) {
+        break;
+      }
+      k++;
+    }
+
+    if(k > inouts.length) {
+      inouts.length = k;
+      inouts.offset = s;
+      if(k == match.length) {
+        return true;
+      }
+    }
+
+    if(k == match.length || s + k == input.length) {
+      k--;
+    }
+
+    if(match[k] < input[s + k]) {
+      r = m;
+    } else {
+      l = m;
+    }
+  }
+
+  return false;
+}
+
+//O(n) with lpf()
+export const suffix_array_previous = (sa: SuffixArray, inouts: { length: number, offset: number }, address: number) => {
+  inouts.length = sa.lengths[address];
+  inouts.offset = sa.offsets[address];
+}
+
 export const induced_sort = (data: number[], characters: number = 256): number[] => {
   const size = data?.length ?? 0;
   if(size == 0) return [0];  //required to avoid out-of-bounds accesses
