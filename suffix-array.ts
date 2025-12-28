@@ -2,7 +2,11 @@ export type SuffixArray = number[];
 
 // suffix array via induced sorting
 // O(n)
-export const suffix_array = (data: Uint8Array, characters: number = 256): SuffixArray => {
+export const suffix_array = (data: Uint8Array): number[] => {
+  return induced_sort([...data]);
+};
+
+export const induced_sort = (data: number[], characters: number = 256): number[] => {
   const size = data?.length ?? 0;
   if(size == 0) return [0];  //required to avoid out-of-bounds accesses
   if(size == 1) return [1, 0];  //not strictly necessary; but more performant
@@ -158,8 +162,8 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   console.log(summaryOffsets.join(""));
 
   //make the summary suffix array
-  /*vector<int> summaries;
-  if(summaryData.size() == summaryCharacters) {
+  const summaries: number[] = [];
+  /*if(summaryData.size() == summaryCharacters) {
     //simple bucket sort when every character in summaryData appears only once
     summaries.resize(summaryData.size() + 1, (int)-1);
     summaries[0] = summaryData.size();  //always include the empty suffix at the beginning
@@ -170,22 +174,25 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   } else {
     //recurse until every character in summaryData is unique ...
     summaries = induced_sort<int>({summaryData.data(), summaryData.size()}, summaryCharacters);
-  }
+  }*/
 
   suffixes.fill(-1);  //reuse existing buffer for accurate sort
 
   //accurate LMS sort
   getTails();
-  for(uint n : reverse(range(2, summaries.size()))) {
-    auto index = summaryOffsets[summaries[n]];
+  for(let n = summaries.length - 1; n >= 2; n--) {
+    //@ts-ignore
+    const index = summaryOffsets[summaries[n]];
+    //@ts-ignore
     suffixes[tails[data[index]]--] = index;  //advance from the tail of the bucket
   }
   suffixes[0] = size;  //always include the empty suffix at the beginning
 
   sortL();
-  sortS();*/
+  console.log(suffixes.join(""));
+  sortS();
+  console.log(suffixes.join(""));
 
-  console.log("");
   return suffixes;
 }
 
