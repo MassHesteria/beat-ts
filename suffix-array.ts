@@ -126,7 +126,7 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   //analyze data for the summary suffix array
   const names: number[] = new Array(size + 1).fill(-1);
 
-  let currentName = 0;  //keep a count to tag each unique LMS-substring with unique IDs
+  let currentName: number = 0;  //keep a count to tag each unique LMS-substring with unique IDs
   let lastLMSOffset = suffixes[0];  //location in the original data of the last checked LMS suffix
   names[lastLMSOffset] = currentName;  //the first LMS-substring is always the empty suffix entry, at position 0
 
@@ -144,17 +144,21 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   }
   console.log(names.join(""));
 
-  /*vector<int> summaryOffsets;
-  vector<int> summaryData;
-  for(uint n : range(size + 1)) {
+  const summaryOffsets: number[] = [];
+  const summaryData: number[] = [];
+  for(let n = 0; n < size + 1; n++) {
     if(names[n] == -1) continue;
-    summaryOffsets.append(n);
-    summaryData.append(names[n]);
+    summaryOffsets.push(n);
+    //@ts-ignore
+    summaryData.push(names[n]);
   }
-  uint summaryCharacters = currentName + 1;  //zero-indexed, so the total unique characters is currentName + 1
+  const summaryCharacters = currentName + 1;  //zero-indexed, so the total unique characters is currentName + 1
+  console.log(summaryCharacters.toString());
+  console.log(summaryData.join(""));
+  console.log(summaryOffsets.join(""));
 
   //make the summary suffix array
-  vector<int> summaries;
+  /*vector<int> summaries;
   if(summaryData.size() == summaryCharacters) {
     //simple bucket sort when every character in summaryData appears only once
     summaries.resize(summaryData.size() + 1, (int)-1);
