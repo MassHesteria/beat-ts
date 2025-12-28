@@ -1,9 +1,14 @@
-export type SuffixArray = number[];
+export type SuffixArray = {
+  sa: number[];
+  phi?: number[];
+};
 
 // suffix array via induced sorting
 // O(n)
-export const suffix_array = (data: Uint8Array): number[] => {
-  return induced_sort([...data]);
+export const suffix_array = (data: Uint8Array): SuffixArray => {
+  return {
+    sa: induced_sort([...data])
+  }
 };
 
 export const induced_sort = (data: number[], characters: number = 256): number[] => {
@@ -199,6 +204,18 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
 
 // longest previous factor
 // O(n)
-export const suffix_array_lpf = (sa: SuffixArray): Uint8Array => {
-  return new Uint8Array([]);
+export const suffix_array_lpf = (array: SuffixArray): SuffixArray => {
+  array.phi = suffix_array_phi(array.sa);
+  return array;
+}
+
+export const suffix_array_phi = (sa: number[]): number[] => {
+  const phi: number[] = new Array(sa.length);
+  //@ts-ignore
+  phi[sa[0]] = 0;
+  for(let i = 1; i < sa.length; i++) {
+    //@ts-ignore
+    phi[sa[i]] = sa[i - 1];
+  }
+  return phi;
 }
