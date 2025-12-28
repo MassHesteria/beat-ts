@@ -26,23 +26,25 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   console.log(types.map(x => x ? 1 : 0).join(""));
 
   //left-most S-suffix
-  /*auto isLMS = [&](int n) -> bool {
-    if(n == 0) return 0;  //no character to the left of the first suffix
-    return !types[n] && types[n - 1];  //true if this is the start of a new S-suffix
+  const isLMS = (n: number): boolean => {
+    if(n == 0) return false;  //no character to the left of the first suffix
+    return (!types[n] && types[n - 1]) as boolean;  //true if this is the start of a new S-suffix
   };
 
   //test if two LMS-substrings are equal
-  auto isEqual = [&](int lhs, int rhs) -> bool {
+  const isEqual = (lhs: number, rhs: number): boolean => {
     if(lhs == size || rhs == size) return false;  //no other suffix can be equal to the empty suffix
 
-    for(uint n = 0;; n++) {
-      bool lhsLMS = isLMS(lhs + n);
-      bool rhsLMS = isLMS(rhs + n);
+    let n = 0;
+    while(true) {
+      const lhsLMS = isLMS(lhs + n);
+      const rhsLMS = isLMS(rhs + n);
       if(n && lhsLMS && rhsLMS) return true;  //substrings are identical
       if(lhsLMS != rhsLMS) return false;  //length mismatch: substrings cannot be identical
       if(data[lhs + n] != data[rhs + n]) return false;  //character mismatch: substrings are different
+      n++;
     }
-  };*/
+  };
 
   //determine the sizes of each bucket: one bucket per character
   const counts: number[] = new Array(characters).fill(0);
@@ -54,67 +56,75 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   console.log(counts.join(""));
 
   //bucket sorting start offsets
-  /*vector<uint> heads;
-  heads.resize(characters);
+  const heads: number[] = new Array(characters).fill(0);
 
-  uint headOffset;
-  auto getHeads = [&] {
+  let headOffset;
+  const getHeads = () => {
     headOffset = 1;
-    for(uint n : range(characters)) {
+    for(let n = 0; n < characters; n++) {
       heads[n] = headOffset;
-      headOffset += counts[n];
+      headOffset += (counts[n] as number);
     }
   };
 
   //bucket sorting end offsets
-  vector<uint> tails;
-  tails.resize(characters);
+  const tails: number[] = new Array(characters).fill(0);
 
-  uint tailOffset;
-  auto getTails = [&] {
+  let tailOffset;
+  const getTails = () => {
     tailOffset = 1;
-    for(uint n : range(characters)) {
-      tailOffset += counts[n];
+    for(let n = 0; n < characters; n++) {
+      tailOffset += (counts[n] as number);
       tails[n] = tailOffset - 1;
     }
-  };*/
+  };
 
   //inaccurate LMS bucket sort
   const suffixes = new Uint8Array(size + 1).fill(255);
 
-  /*getTails();
-  for(uint n : range(size)) {
+  getTails();
+  for(let n = 0; n < size; n++) {
     if(!isLMS(n)) continue;  //skip non-LMS-suffixes
-    suffixes[tails[data[n]]--] = n;  //advance from the tail of the bucket
+    const di = data[n] as number;
+    const ti = tails[di] as number;
+    suffixes[ti] = n;  //advance from the tail of the bucket
+    tails[di] = ti - 1;
   }
 
   suffixes[0] = size;  //the empty suffix is always an LMS-suffix, and is the first suffix
 
+  console.log(suffixes.join(""));
   //sort all L-suffixes to the left of LMS-suffixes
-  auto sortL = [&] {
+  const sortL = () => {
     getHeads();
-    for(uint n : range(size + 1)) {
+    for(let n = 0; n < size + 1; n++) {
       if(suffixes[n] == -1) continue;  //offsets may not be known yet here ...
-      auto l = suffixes[n] - 1;
+      //@ts-ignore
+      const l = suffixes[n] - 1;
       if(l < 0 || !types[l]) continue;  //skip S-suffixes
+      //@ts-ignore
       suffixes[heads[data[l]]++] = l;  //advance from the head of the bucket
     }
   };
 
-  auto sortS = [&] {
+  const sortS = () => {
     getTails();
-    for(uint n : reverse(range(size + 1))) {
-      auto l = suffixes[n] - 1;
+    for(let n = size; n >= 0; n--) {
+      //@ts-ignore
+      const l = suffixes[n] - 1;
       if(l < 0 || types[l]) continue;  //skip L-suffixes
+      //@ts-ignore
       suffixes[tails[data[l]]--] = l;  //advance from the tail of the bucket
     }
   };
 
   sortL();
+  console.log(suffixes.join(""));
   sortS();
+  console.log(suffixes.join(""));
 
   //analyze data for the summary suffix array
-  vector<int> names;
+  /*vector<int> names;
   names.resize(size + 1, (int)-1);
 
   uint currentName = 0;  //keep a count to tag each unique LMS-substring with unique IDs
@@ -168,6 +178,7 @@ export const suffix_array = (data: Uint8Array, characters: number = 256): Suffix
   sortL();
   sortS();*/
 
+  console.log("");
   return suffixes;
 }
 
