@@ -3,6 +3,7 @@ import { suffix_array, suffix_array_find, suffix_array_previous } from "./suffix
 const args = Bun.argv.slice(2);
 
 const create = (source: Uint8Array, target: Uint8Array) => {
+  const start = Date.now();
   let beat: number[] = [];
   const write = (byte: number) => {
     beat.push(byte & 0xFF);
@@ -22,6 +23,7 @@ const create = (source: Uint8Array, target: Uint8Array) => {
   encode(source.length), encode(target.length), encode(0);
   //TODO: write manifest
 
+  console.log("header written in %dms", Date.now() - start);
   const sourceArray = suffix_array(source);
   const targetArray = suffix_array(target, true);
 
@@ -40,6 +42,7 @@ const create = (source: Uint8Array, target: Uint8Array) => {
     }
   };
 
+  console.log("loop prep in %dms", Date.now() - start);
   let overlap = Math.min(source.length, target.length);
   while(outputOffset < target.length) {
     //console.log("outputOffset: %d", outputOffset);
@@ -57,7 +60,7 @@ const create = (source: Uint8Array, target: Uint8Array) => {
       mode = SourceRead, longestLength = length;
     }
 
-    const saf = suffix_array_find(sourceArray.sa, sourceArray.input, target.slice(outputOffset));
+    const saf = suffix_array_find(sourceArray.sa, sourceArray.input, target.subarray(outputOffset));
     length = saf.length, offset = saf.offset;
     //console.log("saf length: %d, offset: %d", length, offset);
     if(length > longestLength) {
@@ -92,6 +95,7 @@ const create = (source: Uint8Array, target: Uint8Array) => {
     }
   }
   flush();
+  console.log("loop in %dms", Date.now() - start);
 
   const sourceHash = Bun.hash.crc32(source);
   write(sourceHash);
@@ -108,6 +112,7 @@ const create = (source: Uint8Array, target: Uint8Array) => {
   write(beatHash >> 8);
   write(beatHash >> 16);
   write(beatHash >> 24);
+  console.log("footer in %dms", Date.now() - start);
   return new Uint8Array(beat);
 }
 
