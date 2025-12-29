@@ -42,6 +42,7 @@ const create = (source: Uint8Array, target: Uint8Array) => {
 
   let overlap = Math.min(source.length, target.length);
   while(outputOffset < target.length) {
+    //console.log("outputOffset: %d", outputOffset);
     let mode = TargetRead, longestLength = 3, longestOffset = 0;
     let length = 0, offset = outputOffset;
 
@@ -51,19 +52,25 @@ const create = (source: Uint8Array, target: Uint8Array) => {
       }
       length++, offset++;
     }
+    //console.log("length: %d, offset: %d", length, offset);
     if(length > longestLength) {
       mode = SourceRead, longestLength = length;
     }
 
-    suffix_array_find({ length, offset }, sourceArray.sa, sourceArray.input, target.slice(outputOffset));
+    const saf = suffix_array_find(sourceArray.sa, sourceArray.input, target.slice(outputOffset));
+    length = saf.length, offset = saf.offset;
+    //console.log("saf length: %d, offset: %d", length, offset);
     if(length > longestLength) {
       mode = SourceCopy, longestLength = length, longestOffset = offset;
     }
 
-    suffix_array_previous(targetArray, { length, offset }, outputOffset);
+    const sap = suffix_array_previous(targetArray, outputOffset);
+    length = sap.length, offset = sap.offset;
+    //console.log("sap length: %d, offset: %d", length, offset);
     if(length > longestLength) {
       mode = TargetCopy, longestLength = length, longestOffset = offset;
     }
+    //console.log("mode: %d", mode);
 
     if(mode == TargetRead) {
       targetReadLength++;  //queue writes to group sequential commands

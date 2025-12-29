@@ -13,22 +13,22 @@ const lpf = (array: SuffixArray): SuffixArray => {
   if (!array.phi) {
     array.phi = suffix_array_phi(array.sa);
   }
-  if (array.phi) {
-    console.log('phi:', array.phi.join(""));
-  }
+  //if (array.phi) {
+    //console.log('phi:', array.phi.join(""));
+  //}
   if(!array.lengths || !array.offsets) {
     array.lengths = [];
     array.offsets = [];
     array.plcp = [];
     suffix_array_lpf(array.lengths, array.offsets, array.phi, array.plcp, array.input);
   }
-  if (array.lengths && array.offsets) {
+  //if (array.lengths && array.offsets) {
     //console.log("lengths size:", array.lengths.length);
-    console.log("lengths:", array.lengths.join(""));
+    //console.log("lengths:", array.lengths.join(""));
     //console.log("offsets size:", array.offsets.length);
-    console.log("offsets:", array.offsets.join(""));
-    console.log("plcp:", array.plcp?.join("") || "");
-  }
+    //console.log("offsets:", array.offsets.join(""));
+    //console.log("plcp:", array.plcp?.join("") || "");
+  //}
   return array;
 }
 
@@ -45,8 +45,8 @@ export const suffix_array = (data: Uint8Array, lcf: boolean = false): SuffixArra
   return arr;
 };
 
-export const suffix_array_find = (inouts: { length: number, offset: number }, sa: number[], input: Uint8Array, match: Uint8Array): boolean => {
-  inouts.length = 0, inouts.offset = 0;
+export const suffix_array_find = (sa: number[], input: Uint8Array, match: Uint8Array): {result: boolean, length: number, offset: number} => {
+  let length = 0, offset = 0;
   let l = 0, r = input.length;
 
   while(l < r - 1) {
@@ -61,11 +61,16 @@ export const suffix_array_find = (inouts: { length: number, offset: number }, sa
       k++;
     }
 
-    if(k > inouts.length) {
-      inouts.length = k;
-      inouts.offset = s;
+    if(k > length) {
+      length = k;
+      offset = s;
       if(k == match.length) {
-        return true;
+        //console.log("suffix_array_find true, length: %d, offset: %d", length, offset);
+        return {
+          result: true,
+          length,
+          offset
+        }
       }
     }
 
@@ -79,14 +84,21 @@ export const suffix_array_find = (inouts: { length: number, offset: number }, sa
       l = m;
     }
   }
+  //console.log("suffix_array_find false, length: %d, offset: %d", length, offset);
 
-  return false;
+  return {
+    result: false,
+    length,
+    offset
+  };
 }
 
 //O(n) with lpf()
-export const suffix_array_previous = (sa: SuffixArray, inouts: { length: number, offset: number }, address: number) => {
-  inouts.length = sa.lengths[address];
-  inouts.offset = sa.offsets[address];
+export const suffix_array_previous = (sa: SuffixArray, address: number): { length: number, offset: number } => {
+  return {
+    length: sa.lengths[address],
+    offset: sa.offsets[address]
+  };
 }
 
 export const induced_sort = (data: number[], characters: number = 256): number[] => {
@@ -110,7 +122,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
       types[n] = types[n + 1] as boolean;  //this suffix will be the same as the one after it
     }
   }
-  console.log(types.map(x => x ? 1 : 0).join(""));
+  //console.log(types.map(x => x ? 1 : 0).join(""));
 
   //left-most S-suffix
   const isLMS = (n: number): boolean => {
@@ -140,7 +152,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     const cnt = counts[idx] as number;
     counts[idx] = cnt + 1;
   }
-  console.log(counts.join(""));
+  //console.log(counts.join(""));
 
   //bucket sorting start offsets
   const heads: number[] = new Array(characters).fill(0);
@@ -180,7 +192,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
 
   suffixes[0] = size;  //the empty suffix is always an LMS-suffix, and is the first suffix
 
-  console.log(suffixes.join(""));
+  //console.log(suffixes.join(""));
   //sort all L-suffixes to the left of LMS-suffixes
   const sortL = () => {
     getHeads();
@@ -206,9 +218,9 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
   };
 
   sortL();
-  console.log(suffixes.join(""));
+  //console.log(suffixes.join(""));
   sortS();
-  console.log(suffixes.join(""));
+  //console.log(suffixes.join(""));
 
   //analyze data for the summary suffix array
   const names: number[] = new Array(size + 1).fill(-1);
@@ -229,7 +241,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     lastLMSOffset = offset;  //keep track of the new most-recent LMS suffix
     names[lastLMSOffset] = currentName;  //store the LMS suffix name where the suffix appears at in the original data
   }
-  console.log(names.join(""));
+  //console.log(names.join(""));
 
   const summaryOffsets: number[] = [];
   const summaryData: number[] = [];
@@ -240,9 +252,9 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     summaryData.push(names[n]);
   }
   const summaryCharacters = currentName + 1;  //zero-indexed, so the total unique characters is currentName + 1
-  console.log(summaryCharacters.toString());
-  console.log(summaryData.join(""));
-  console.log(summaryOffsets.join(""));
+  //console.log(summaryCharacters.toString());
+  //console.log(summaryData.join(""));
+  //console.log(summaryOffsets.join(""));
 
   //make the summary suffix array
   let summaries: number[];
@@ -273,9 +285,9 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
   suffixes[0] = size;  //always include the empty suffix at the beginning
 
   sortL();
-  console.log(suffixes.join(""));
+  //console.log(suffixes.join(""));
   sortS();
-  console.log(suffixes.join(""));
+  //console.log(suffixes.join(""));
 
   return suffixes;
 }
