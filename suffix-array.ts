@@ -1,43 +1,23 @@
 export type SuffixArray = {
   input: Uint8Array;
   sa: number[];
-  phi?: number[];
   lengths?: number[];
   offsets?: number[];
 };
 
-// longest previous factor
-// O(n)
-const lpf = (array: SuffixArray): SuffixArray => {
-  if (!array.phi) {
-    array.phi = suffix_array_phi(array.sa);
-  }
-  //if (array.phi) {
-    //console.log('phi:', array.phi.join(""));
-  //}
-  if(!array.lengths || !array.offsets) {
-    array.lengths = new Array(array.input.length + 1);
-    array.offsets = new Array(array.input.length + 1);
-    suffix_array_lpf(array.lengths, array.offsets, array.phi, array.input);
-  }
-  //if (array.lengths && array.offsets) {
-    //console.log("lengths size:", array.lengths.length);
-    //console.log("lengths:", array.lengths.join(""));
-    //console.log("offsets size:", array.offsets.length);
-    //console.log("offsets:", array.offsets.join(""));
-  //}
-  return array;
-}
-
 // suffix array via induced sorting
 // O(n)
-export const suffix_array = (data: Uint8Array, lcf: boolean = false): SuffixArray => {
+export const suffix_array = (data: Uint8Array, lpf: boolean = false): SuffixArray => {
   const arr: SuffixArray = {
     input: data,
     sa: induced_sort(data),
   };
-  if (lcf) {
-    lpf(arr);
+  if (lpf) {
+    // longest previous factor
+    // O(n)
+    arr.lengths = new Array(data.length + 1);
+    arr.offsets = new Array(data.length + 1);
+    suffix_array_lpf(arr.sa, arr.lengths, arr.offsets, data);
   }
   return arr;
 };
@@ -302,11 +282,17 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
 
 // longest previous factor
 // O(n)
-const suffix_array_lpf = (lengths: number[], offsets: number[], phi: number[], input: Uint8Array) => {
+const suffix_array_lpf = (sa: number[], lengths: number[], offsets: number[], input: Uint8Array) => {
   let k = 0, size = input.length;
 
   lengths.fill(-1);
   offsets.fill(-1);
+
+  const phi = new Int32Array(sa.length);
+  for(let i = 1; i < sa.length; i++) {
+    //@ts-ignore
+    phi[sa[i]] = sa[i - 1];
+  }
 
   const recurse = (i: number, j: number, k: number) => {
     //@ts-ignore
@@ -358,15 +344,4 @@ const suffix_array_lpf = (lengths: number[], offsets: number[], phi: number[], i
 
   lengths[0] = 0;
   offsets[0] = 0;
-}
-
-const suffix_array_phi = (sa: number[]): number[] => {
-  const phi: number[] = new Array(sa.length);
-  //@ts-ignore
-  phi[sa[0]] = 0;
-  for(let i = 1; i < sa.length; i++) {
-    //@ts-ignore
-    phi[sa[i]] = sa[i - 1];
-  }
-  return phi;
 }
