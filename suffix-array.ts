@@ -17,9 +17,9 @@ const lpf = (array: SuffixArray): SuffixArray => {
     //console.log('phi:', array.phi.join(""));
   //}
   if(!array.lengths || !array.offsets) {
-    array.lengths = [];
-    array.offsets = [];
     array.plcp = [];
+    array.lengths = new Array(array.input.length + 1).fill(-1);
+    array.offsets = new Array(array.input.length + 1).fill(-1);
     suffix_array_lpf(array.lengths, array.offsets, array.phi, array.plcp, array.input);
   }
   //if (array.lengths && array.offsets) {
@@ -96,12 +96,15 @@ export const suffix_array_find = (sa: number[], input: Uint8Array, match: Uint8A
 //O(n) with lpf()
 export const suffix_array_previous = (sa: SuffixArray, address: number): { length: number, offset: number } => {
   return {
+    //@ts-ignore
     length: sa.lengths[address],
+    //@ts-ignore
     offset: sa.offsets[address]
   };
 }
 
 export const induced_sort = (data: number[], characters: number = 256): number[] => {
+  //const start = Date.now();
   const size = data?.length ?? 0;
   if(size == 0) return [0];  //required to avoid out-of-bounds accesses
   if(size == 1) return [1, 0];  //not strictly necessary; but more performant
@@ -123,6 +126,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     }
   }
   //console.log(types.map(x => x ? 1 : 0).join(""));
+  //console.log("type array in %dms", Date.now() - start);
 
   //left-most S-suffix
   const isLMS = (n: number): boolean => {
@@ -153,6 +157,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     counts[idx] = cnt + 1;
   }
   //console.log(counts.join(""));
+  //console.log("count array in %dms", Date.now() - start);
 
   //bucket sorting start offsets
   const heads: number[] = new Array(characters).fill(0);
@@ -189,6 +194,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     suffixes[ti] = n;  //advance from the tail of the bucket
     tails[di] = ti - 1;
   }
+  //console.log("init suffixes in %dms", Date.now() - start);
 
   suffixes[0] = size;  //the empty suffix is always an LMS-suffix, and is the first suffix
 
@@ -221,6 +227,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
   //console.log(suffixes.join(""));
   sortS();
   //console.log(suffixes.join(""));
+  //console.log("sort suffixes in %dms", Date.now() - start);
 
   //analyze data for the summary suffix array
   const names: number[] = new Array(size + 1).fill(-1);
@@ -242,6 +249,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     names[lastLMSOffset] = currentName;  //store the LMS suffix name where the suffix appears at in the original data
   }
   //console.log(names.join(""));
+  //console.log("names in %dms", Date.now() - start);
 
   const summaryOffsets: number[] = [];
   const summaryData: number[] = [];
@@ -271,6 +279,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
     //recurse until every character in summaryData is unique ...
     summaries = induced_sort(summaryData, summaryCharacters);
   }
+  //console.log("summaries in %dms", Date.now() - start);
 
   suffixes.fill(-1);  //reuse existing buffer for accurate sort
 
@@ -288,6 +297,7 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
   //console.log(suffixes.join(""));
   sortS();
   //console.log(suffixes.join(""));
+  //console.log("final suffixes in %dms", Date.now() - start);
 
   return suffixes;
 }
@@ -297,17 +307,6 @@ export const induced_sort = (data: number[], characters: number = 256): number[]
 // optional: plcp
 const suffix_array_lpf = (lengths: number[], offsets: number[], phi: number[], plcp: number[], input: Uint8Array) => {
   let k = 0, size = input.length;
-  const resize = (arr: number[], newSize: number, defaultValue: number) => {
-    arr.length = 0;
-    while (arr.length < newSize) {
-      arr.push(defaultValue);
-    }
-  }
-
-  resize(lengths, size + 1, -1);
-  //console.log("lengths init:" , lengths.join(""));
-  resize(offsets, size + 1, -1);
-  //console.log("offsets init:" , offsets.join(""));
 
   const recurse = (i: number, j: number, k: number) => {
     //@ts-ignore
@@ -338,30 +337,41 @@ const suffix_array_lpf = (lengths: number[], offsets: number[], phi: number[], p
     }
   };
 
-  for(let i = 0; i < size; i++) {
-    const j = phi[i];
-    if(plcp && plcp.length > 0) {
+  if(plcp && plcp.length > 0) {
+    for(let i = 0; i < size; i++) {
+      const j = phi[i];
       //@ts-ignore
       k = plcp[i];
+      //@ts-ignore
+      if(i > j) {
+      //@ts-ignore
+        recurse(i, j, k);
+      } else {
+      //@ts-ignore
+        recurse(j, i, k);
+      }
+      if(k) {
+        k--;
+      }
     }
-    else {
+  } else {
+    for(let i = 0; i < size; i++) {
+      const j = phi[i];
       //@ts-ignore
       while(i + k < size && j + k < size && input[i + k] == input[j + k]) {
         k++;
       }
-    }
-    //@ts-ignore
-    if(i > j) {
-    //console.log("recurse a", i, j, k);
-    //@ts-ignore
-      recurse(i, j, k);
-    } else {
-    //console.log("recurse b", i, j, k);
-    //@ts-ignore
-      recurse(j, i, k);
-    }
-    if(k) {
-      k--;
+      //@ts-ignore
+      if(i > j) {
+      //@ts-ignore
+        recurse(i, j, k);
+      } else {
+      //@ts-ignore
+        recurse(j, i, k);
+      }
+      if(k) {
+        k--;
+      }
     }
   }
 

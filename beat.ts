@@ -84,11 +84,13 @@ const create = (source: Uint8Array, target: Uint8Array) => {
       if(mode == SourceCopy) {
         let relativeOffset = longestOffset - sourceRelativeOffset;
         sourceRelativeOffset = longestOffset + longestLength;
+        //@ts-ignore
         encode(relativeOffset < 0 | Math.abs(relativeOffset) << 1);
       }
       if(mode == TargetCopy) {
         let relativeOffset = longestOffset - targetRelativeOffset;
         targetRelativeOffset = longestOffset + longestLength;
+        //@ts-ignore
         encode(relativeOffset < 0 | Math.abs(relativeOffset) << 1);
       }
       outputOffset += longestLength;

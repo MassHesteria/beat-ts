@@ -1,6 +1,9 @@
 {
   "name": "beat-ts",
   "private": true,
+  "scripts": {
+    "build": "bun build ./beat.ts --compile --outfile beats"
+  },
   "devDependencies": {
     "@types/bun": "^1.3.5"
   },
