@@ -4,7 +4,7 @@ const args = Bun.argv.slice(2);
 
 const create = (source: Uint8Array, target: Uint8Array) => {
   const start = Date.now();
-  let beat: number[] = [];
+  const beat: number[] = [0x42, 0x50, 0x53, 0x31]; // "BPS1"
   const write = (byte: number) => {
     beat.push(byte & 0xFF);
   }
@@ -19,13 +19,14 @@ const create = (source: Uint8Array, target: Uint8Array) => {
     }
   };
 
-  write(0x42), write(0x50), write(0x53), write(0x31);
   encode(source.length), encode(target.length), encode(0);
   //TODO: write manifest
 
   console.log("header written in %dms", Date.now() - start);
   const sourceArray = suffix_array(source);
+  console.log("source array in %dms", Date.now() - start);
   const targetArray = suffix_array(target, true);
+  console.log("target array in %dms", Date.now() - start);
 
   const SourceRead = 0, TargetRead = 1, SourceCopy = 2, TargetCopy = 3;
   let outputOffset = 0, sourceRelativeOffset = 0, targetRelativeOffset = 0;
@@ -42,7 +43,6 @@ const create = (source: Uint8Array, target: Uint8Array) => {
     }
   };
 
-  console.log("loop prep in %dms", Date.now() - start);
   let overlap = Math.min(source.length, target.length);
   while(outputOffset < target.length) {
     //console.log("outputOffset: %d", outputOffset);
