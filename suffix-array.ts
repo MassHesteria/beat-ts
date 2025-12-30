@@ -34,7 +34,7 @@ const lpf = (array: SuffixArray): SuffixArray => {
 export const suffix_array = (data: Uint8Array, lcf: boolean = false): SuffixArray => {
   const arr: SuffixArray = {
     input: data,
-    sa: induced_sort(Array.from(data)),
+    sa: induced_sort(data),
   };
   if (lcf) {
     lpf(arr);
@@ -101,26 +101,26 @@ export const suffix_array_previous = (sa: SuffixArray, address: number): { lengt
   };
 }
 
-export const induced_sort = (data: number[], characters: number = 256): number[] => {
+export const induced_sort = (data: Uint8Array | number[], characters: number = 256): number[] => {
   //const start = Date.now();
   const size = data?.length ?? 0;
   if(size == 0) return [0];  //required to avoid out-of-bounds accesses
   if(size == 1) return [1, 0];  //not strictly necessary; but more performant
 
   //0 = S-suffix (sort before next suffix), 1 = L-suffix (sort after next suffix)
-  const types: boolean[] = new Array(size + 1).fill(false);
-
-  types[size - 0] = false;  //empty suffix is always S-suffix
-  types[size - 1] = true;   //last suffix is always L-suffix compared to empty suffix
+  const types = new Uint8Array(size + 1);
+  types[size] = 0;  //empty suffix is always S-suffix
+  types[size - 1] = 1;   //last suffix is always L-suffix compared to empty suffix
   for(let n = size - 2; n >= 0; n--) {
     const curr = data[n] as number;
     const next = data[n + 1] as number;
     if(curr < next) {
-      types[n] = false;  //this suffix is smaller than the one after it
+      types[n] = 0;  //this suffix is smaller than the one after it
     } else if(curr > next) {
-      types[n] = true;  //this suffix is larger than the one after it
+      types[n] = 1;  //this suffix is larger than the one after it
     } else {
-      types[n] = types[n + 1] as boolean;  //this suffix will be the same as the one after it
+      //@ts-ignore
+      types[n] = types[n + 1];  //this suffix will be the same as the one after it
     }
   }
   //console.log(types.map(x => x ? 1 : 0).join(""));
