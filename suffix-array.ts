@@ -294,49 +294,54 @@ const suffix_array_lpf = (sa: number[], lengths: number[], offsets: number[], in
     phi[sa[i]] = sa[i - 1];
   }
 
-  const recurse = (i: number, j: number, k: number) => {
-    //@ts-ignore
-    if(lengths[i] < 0) {
-      lengths[i] = k;
-      offsets[i] = j;
-    //@ts-ignore
-    } else if(lengths[i] < k) {
-      //@ts-ignore
-      if(offsets[i] > j) {
-        //@ts-ignore
-        recurse(offsets[i], j, lengths[i]);
-      } else {
-        //@ts-ignore
-        recurse(j, offsets[i], lengths[i]);
-      }
-      lengths[i] = k;
-      offsets[i] = j;
+  type Frame = { type: 'call' | 'post', i: number, j: number, k: number };
+  const stack: Frame[] = [];
+  const call = (x: number, y: number, z: number) => {
+    if (x > y) {
+      stack.push({ type: 'call', i: x, j: y, k: z });
     } else {
-        //@ts-ignore
-      if(offsets[i] > j) {
-        //@ts-ignore
-        recurse(offsets[i], j, k);
-      } else {
-        //@ts-ignore
-        recurse(j, offsets[i], k);
-      }
+      stack.push({ type: 'call', i: y, j: x, k: z });
     }
-  };
+  }
+  const post = (x: number, y: number, z: number) => stack.push({ type: 'post', i: x, j: y, k: z });
 
   for(let i = 0; i < size; i++) {
-    const j = phi[i];
+    const j = phi[i] as number;
     //@ts-ignore
     while(i + k < size && j + k < size && input[i + k] == input[j + k]) {
       k++;
     }
-    //@ts-ignore
-    if(i > j) {
-    //@ts-ignore
-      recurse(i, j, k);
-    } else {
-    //@ts-ignore
-      recurse(j, i, k);
+
+    // push initial call frame, preserving original ordering (i>j ? i:j)
+    call(i, j, k);
+
+    while (stack.length) {
+      const frame = stack.pop() as Frame;
+      if (frame.type === 'post') {
+        // perform post-update (this corresponds to code after a recursive child returns)
+        lengths[frame.i] = frame.k;
+        offsets[frame.i] = frame.j;
+        continue;
+      }
+
+      const ii = frame.i, jj = frame.j, kk = frame.k;
+      //@ts-ignore
+      if (lengths[ii] < 0) {
+        lengths[ii] = kk;
+        offsets[ii] = jj;
+      //@ts-ignore
+      } else if (lengths[ii] < kk) {
+        // need to process child first, then do post-update => push post then child
+        post(ii, jj, kk);
+      //@ts-ignore
+        call(offsets[ii], jj, lengths[ii]);
+      } else {
+        // lengths[ii] >= kk -> just recurse to the child (no post-update)
+      //@ts-ignore
+        call(offsets[ii], jj, kk);
+      }
     }
+
     if(k) {
       k--;
     }
