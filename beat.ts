@@ -2,11 +2,35 @@ import { suffix_array, suffix_array_find, suffix_array_previous } from "./suffix
 
 const args = Bun.argv.slice(2);
 
+const crcTable: Uint32Array = new Uint32Array(256);
+for (let n = 0; n < 256; n++) {
+  let c = n;
+  for (var k = 0; k < 8; k++) {
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  }
+  crcTable[n] = c;
+}
+
+const crc32 = (buffer: Uint8Array | number[]) => {
+  let crc = 0 ^ -1;
+
+  for (let i = 0; i < buffer.length; i++) {
+    //@ts-ignore
+    crc = (crc >>> 8) ^ crcTable[(crc ^ buffer[i]) & 0xff];
+  }
+
+  return (crc ^ -1) >>> 0;
+};
+
+
 const create = (source: Uint8Array, target: Uint8Array) => {
-  const start = Date.now();
+  let start = Date.now();
   const beat: number[] = [0x42, 0x50, 0x53, 0x31]; // "BPS1"
   const write = (byte: number) => {
     beat.push(byte & 0xFF);
+  }
+  const write32 = (data: number) => {
+    write(data), write(data >> 8), write(data >> 16), write(data >> 24);
   }
 
   const encode = (data: number) => {
@@ -23,10 +47,15 @@ const create = (source: Uint8Array, target: Uint8Array) => {
   //TODO: write manifest
 
   console.log("header written in %dms", Date.now() - start);
+  start = Date.now();
+
   const sourceArray = suffix_array(source);
   console.log("source array in %dms", Date.now() - start);
+  start = Date.now();
+
   const targetArray = suffix_array(target, true);
   console.log("target array in %dms", Date.now() - start);
+  start = Date.now();
 
   const SourceRead = 0, TargetRead = 1, SourceCopy = 2, TargetCopy = 3;
   let outputOffset = 0, sourceRelativeOffset = 0, targetRelativeOffset = 0;
@@ -98,23 +127,13 @@ const create = (source: Uint8Array, target: Uint8Array) => {
   }
   flush();
   console.log("loop in %dms", Date.now() - start);
+  start = Date.now();
 
-  const sourceHash = Bun.hash.crc32(source);
-  write(sourceHash);
-  write(sourceHash >> 8);
-  write(sourceHash >> 16);
-  write(sourceHash >> 24);
-  const targetHash = Bun.hash.crc32(target);
-  write(targetHash);
-  write(targetHash >> 8);
-  write(targetHash >> 16);
-  write(targetHash >> 24);
-  const beatHash = Bun.hash.crc32(new Uint8Array(beat));
-  write(beatHash);
-  write(beatHash >> 8);
-  write(beatHash >> 16);
-  write(beatHash >> 24);
+  write32(crc32(source));
+  write32(crc32(target));
+  write32(crc32(beat));
   console.log("footer in %dms", Date.now() - start);
+
   return new Uint8Array(beat);
 }
 
