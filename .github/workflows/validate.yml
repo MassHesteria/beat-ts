@@ -29,3 +29,13 @@ jobs:
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
           make
 
+      - name: run
+        run: |
+          cd beat
+          touch a.txt
+          out/beat -create:bps create_beat.bps a.txt beat.cpp
+          ls -l
+          out/beat -apply:bps create_beat.bps a.txt patched.cpp
+          ls -l
+          diff beat.cpp patched.cpp
+
