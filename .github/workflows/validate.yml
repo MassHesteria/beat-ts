@@ -19,11 +19,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk2.0-dev libgtksourceview2.0-dev libx11-dev
 
-      - name: Fix std except
+      - name: make
         run: |
           cd beat
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
-
-      - name: make
-        run: make
+          make
 
