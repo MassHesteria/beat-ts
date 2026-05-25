@@ -39,3 +39,16 @@ jobs:
           sha256sum patched.cpp
           pwd
 
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: ts-run
+        run: |
+          bun run beat.ts -create:bps create_bps.bps beat/a.txt beat/beat.cpp
+          ls -l
+          sha256sum create_bps.bps
+          sha256sum beat/create_bps.bps
+
