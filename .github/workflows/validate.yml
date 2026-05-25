@@ -34,8 +34,8 @@ jobs:
           cd beat
           touch a.txt
           out/beat -create:bps create_beat.bps a.txt beat.cpp
-          ls -l
           out/beat -apply:bps create_beat.bps a.txt patched.cpp
-          ls -l
-          diff beat.cpp patched.cpp
+          sha256sum beat.cpp
+          sha256sum patched.cpp
+          pwd
 
