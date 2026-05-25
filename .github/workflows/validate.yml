@@ -11,7 +11,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
         with:
-          repository: 'https://github.com/MassHesteria/beat.git'
+          repository: 'MassHesteria/beat'
 
       - name: make
         run: cd beat && make
