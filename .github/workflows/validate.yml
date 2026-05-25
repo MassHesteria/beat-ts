@@ -21,10 +21,9 @@ jobs:
 
       - name: Fix std except
         run: |
+          cd beat
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
 
       - name: make
-        run: |
-          cd beat
-          make
+        run: make
 
