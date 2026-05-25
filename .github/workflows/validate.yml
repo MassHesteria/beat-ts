@@ -22,6 +22,8 @@ jobs:
       - name: make
         run: |
           cd beat
+          mkdir -p obj
+          mkdir -p out
           sed -i '/#pragma once/a #include <stdexcept>' ../hiro/hiro.hpp
           sed -i '/#pragma once/a #include <stdexcept>' ../nall/platform.hpp
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
