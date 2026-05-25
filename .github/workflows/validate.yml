@@ -13,6 +13,9 @@ jobs:
         with:
           repository: 'MassHesteria/beat'
 
+      - name: Install GTK2
+        run: apt update && apt install -y libgtk2.0-dev libgtksourceview2.0-dev libx11-dev
+
       - name: make
         run: cd beat && make
 
