@@ -18,14 +18,7 @@ jobs:
         uses: actions/checkout@v6.0.2
         with:
           repository: 'MassHesteria/beat'
-          path: 'beat'
-
-      - name: log
-        run: |
-          ls -l
-          pwd
-          ls -l beat
-          ls -l beat-ts
+          path: 'beat-cpp'
 
       - name: Install GTK2
         run: |
@@ -35,7 +28,7 @@ jobs:
 
       - name: make
         run: |
-          cd beat
+          cd beat-cpp/beat
           mkdir -p obj
           mkdir -p out
           sed -i '/#pragma once/a #include <stdexcept>' ../hiro/hiro.hpp
@@ -45,7 +38,7 @@ jobs:
 
       - name: run
         run: |
-          cd beat
+          cd beat-cpp/beat
           touch a.txt
           out/beat -create:bps create_beat.bps a.txt beat.cpp
           out/beat -apply:bps create_beat.bps a.txt patched.cpp
@@ -57,7 +50,7 @@ jobs:
         run: |
           pwd
           ls -l
-          bun run beat.ts -create:bps create_bps.bps ../beat/a.txt ../beat/beat.cpp
+          bun run beat.ts -create:bps create_bps.bps beat-cpp/beat/a.txt beat-cpp/beat/beat.cpp
           sha256sum create_bps.bps
-          sha256sum ../beat/create_bps.bps
+          sha256sum beat-cpp/beat/create_bps.bps
 
