@@ -10,8 +10,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
         with:
           repository: 'MassHesteria/beat'
+          path: 'beat'
+
+      - name: log
+        run: |
+          ls -l
+          pwd
+          ls -l beat
+          ls -l beat-ts
 
       - name: Install GTK2
         run: |
@@ -38,12 +52,6 @@ jobs:
           sha256sum beat.cpp
           sha256sum patched.cpp
           pwd
-
-      - name: Checkout code
-        uses: actions/checkout@v6.0.2
-
-      - name: Setup bun
-        uses: oven-sh/setup-bun@v2
 
       - name: ts-run
         run: |
