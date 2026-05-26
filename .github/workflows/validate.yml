@@ -47,6 +47,7 @@ jobs:
 
       - name: ts-run
         run: |
+          pwd
           ls -l
           bun run beat.ts -create:bps create_bps.bps beat/a.txt beat/beat.cpp
           sha256sum create_bps.bps
