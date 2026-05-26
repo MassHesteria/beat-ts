@@ -28,6 +28,7 @@ jobs:
 
       - name: make
         run: |
+          touch a.txt
           cd beat-cpp/beat
           mkdir -p obj
           mkdir -p out
@@ -36,27 +37,21 @@ jobs:
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
           make
 
-      - name: cpp-run
+      - name: beat.cpp - patch
         run: |
-          cd beat-cpp/beat
-          touch a.txt
-          out/beat -create:bps create_beat.bps a.txt beat.cpp
-          out/beat -apply:bps create_beat.bps a.txt patched.cpp
-          sha256sum beat.cpp
-          sha256sum patched.cpp
-          out/beat -create:bps create_img.bps resource/beat.ico resource/beat.png
-          out/beat -apply:bps create_img.bps resource/beat.ico patched.png
-          sha256sum resource/beat.png
-          sha256sum patched.png
+          beat-cpp/beat/out/beat -create:bps cpp_patch.bps a.txt beat-cpp/beat/beat.cpp
+          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a.txt patched.cpp
+          diff beat-cpp/beat/beat.cpp patched.cpp
+          rm patched.cpp
+          bun run beat.ts -create:bps ts_patch.bps a.txt beat-cpp/beat/beat.cpp
+          diff cpp_patch.bps ts_patch.bps && echo 'beat.cpp patch passed'
 
-      - name: ts-run
+      - name: beat.png - patch
         run: |
-          pwd
-          ls -l
-          bun run beat.ts -create:bps create_beat.bps beat-cpp/beat/a.txt beat-cpp/beat/beat.cpp
-          sha256sum create_beat.bps
-          sha256sum beat-cpp/beat/create_beat.bps
-          bun run beat.ts -create:bps create_img.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
-          sha256sum create_img.bps
-          sha256sum beat-cpp/beat/create_img.bps
+          beat-cpp/beat/out/beat -create:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
+          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico patched.png
+          diff beat-cpp/beat/resource/beat.png patched.png
+          rm patched.png
+          bun run beat.ts -create:bps ts_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
+          diff cpp_patch.bps ts_patch.bps && echo 'beat.png patch passed'
 
