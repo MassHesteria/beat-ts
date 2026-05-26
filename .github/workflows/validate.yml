@@ -36,16 +36,18 @@ jobs:
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
           make
 
-      - name: run
+      - name: cpp-run
         run: |
           cd beat-cpp/beat
           touch a.txt
           out/beat -create:bps create_beat.bps a.txt beat.cpp
           out/beat -apply:bps create_beat.bps a.txt patched.cpp
-          sha256sum create_beat.bps
           sha256sum beat.cpp
           sha256sum patched.cpp
-          pwd
+          out/beat -create:bps create_img.bps resource/beat.ico resource/beat.png
+          out/beat -apply:bps create_img.bps resource/beat.ico patched.png
+          sha256sum resource/beat.png
+          sha256sum patched.png
 
       - name: ts-run
         run: |
@@ -54,4 +56,7 @@ jobs:
           bun run beat.ts -create:bps create_beat.bps beat-cpp/beat/a.txt beat-cpp/beat/beat.cpp
           sha256sum create_beat.bps
           sha256sum beat-cpp/beat/create_beat.bps
+          bun run beat.ts -create:bps create_img.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
+          sha256sum create_img.bps
+          sha256sum beat-cpp/beat/create_img.bps
 
