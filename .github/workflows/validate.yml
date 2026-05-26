@@ -56,12 +56,8 @@ jobs:
           diff cpp_patch.bps ts_patch.bps && echo 'beat.png patch passed'
 
       - name: beat.cpp beat.png - failure
-        continue-on-error: true
         run: |
           beat-cpp/beat/out/beat -create:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
-          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico patched.png
-          diff beat-cpp/beat/resource/beat.png patched.png
-          rm patched.png
           bun run beat.ts -create:bps ts_patch.bps beat-cpp/beat/beat.cpp beat-cpp/beat/resource/beat.png
-          diff cpp_patch.bps ts_patch.bps
+          ! diff cpp_patch.bps ts_patch.bps && echo 'beat.cpp beat.png patch correctly failed'
 
