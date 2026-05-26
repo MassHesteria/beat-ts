@@ -42,6 +42,7 @@ jobs:
           touch a.txt
           out/beat -create:bps create_beat.bps a.txt beat.cpp
           out/beat -apply:bps create_beat.bps a.txt patched.cpp
+          sha256sum create_beat.bps
           sha256sum beat.cpp
           sha256sum patched.cpp
           pwd
@@ -50,7 +51,7 @@ jobs:
         run: |
           pwd
           ls -l
-          bun run beat.ts -create:bps create_bps.bps beat-cpp/beat/a.txt beat-cpp/beat/beat.cpp
-          sha256sum create_bps.bps
-          sha256sum beat-cpp/beat/create_bps.bps
+          bun run beat.ts -create:bps create_beat.bps beat-cpp/beat/a.txt beat-cpp/beat/beat.cpp
+          sha256sum create_beat.bps
+          sha256sum beat-cpp/beat/create_beat.bps
 
