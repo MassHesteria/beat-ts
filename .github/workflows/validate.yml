@@ -36,7 +36,7 @@ jobs:
           sed -i '1s/^/#include <stdexcept>\n/' beat.hpp
           make
 
-      - name: beat.cpp - patch
+      - name: Compression Tests
         run: |
           function compress_test {
             local org_bytes=$(stat -c%s "$1")
@@ -45,13 +45,16 @@ jobs:
             diff $1 patched.cpp
             rm patched.cpp
             local pat_bytes=$(stat -c%s "cpp_patch.bps")
+            local percent=$(( pat_bytes * 100 / org_bytes ))
             bun run beat.ts -create:bps ts_patch.bps a.txt $1 > /dev/null
-            diff cpp_patch.bps ts_patch.bps && echo "$1 compress passed: $org_bytes -> $pat_bytes"
+            diff cpp_patch.bps ts_patch.bps && echo "$1 compress passed: $org_bytes -> $pat_bytes ($percent%)"
           }
           compress_test beat-cpp/beat/beat.cpp || exit 1
           compress_test beat-cpp/hiro/hiro.cpp || exit 1
           compress_test beat-cpp/nall/nall.hpp || exit 1
           compress_test beat-cpp/beat/out/beat || exit 1
+          compress_test beat-cpp/beat/resource/beat.png || exit 1
+          compress_test beat-cpp/beat/resource/beat.ico || exit 1
 
       - name: beat.png - patch
         run: |
