@@ -27,7 +27,6 @@ jobs:
 
       - name: make
         run: |
-          touch a.txt
           cd beat-cpp/beat
           mkdir -p obj
           mkdir -p out
@@ -40,6 +39,7 @@ jobs:
         run: |
           function compress_test {
             local org_bytes=$(stat -c%s "$1")
+            touch a.txt
             beat-cpp/beat/out/beat -create:bps cpp_patch.bps a.txt $1 > /dev/null
             beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a.txt patched.cpp > /dev/null
             diff $1 patched.cpp
@@ -56,8 +56,18 @@ jobs:
           compress_test beat-cpp/beat/resource/beat.png || exit 1
           compress_test beat-cpp/beat/resource/beat.ico || exit 1
 
-      - name: beat.png - patch
+      - name: Patch Tests
         run: |
+          function patch_test {
+            beat-cpp/beat/out/beat -create:bps cpp_patch.bps $1 $2 > /dev/null
+            beat-cpp/beat/out/beat -apply:bps cpp_patch.bps $1 patched.file > /dev/null
+            diff $2 patched.file
+            rm patched.file
+            bun run beat.ts -create:bps ts_patch.bps $1 $2 > /dev/null
+            diff cpp_patch.bps ts_patch.bps && echo "$1 -> $2 passed"
+          }
+          patch_test beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png || exit 1
+          patch_test beat-cpp/beat/beat.hpp beat-cpp/beat/beat.cpp || exit 1
           beat-cpp/beat/out/beat -create:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
           beat-cpp/beat/out/beat -apply:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico patched.png
           diff beat-cpp/beat/resource/beat.png patched.png
