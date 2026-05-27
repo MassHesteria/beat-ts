@@ -24,7 +24,7 @@ const crc32 = (buffer: Uint8Array | number[]) => {
 
 
 const create = (source: Uint8Array, target: Uint8Array) => {
-  let start = Date.now();
+  //let start = Date.now();
   const beat: number[] = [0x42, 0x50, 0x53, 0x31]; // "BPS1"
   const write = (byte: number) => {
     beat.push(byte & 0xFF);
@@ -46,16 +46,16 @@ const create = (source: Uint8Array, target: Uint8Array) => {
   encode(source.length), encode(target.length), encode(0);
   //TODO: write manifest
 
-  console.log("header written in %dms", Date.now() - start);
-  start = Date.now();
+  //console.log("header written in %dms", Date.now() - start);
+  //start = Date.now();
 
   const sourceArray = suffix_array(source);
-  console.log("source array in %dms", Date.now() - start);
-  start = Date.now();
+  //console.log("source array in %dms", Date.now() - start);
+  //start = Date.now();
 
   const targetArray = suffix_array(target, true);
-  console.log("target array in %dms", Date.now() - start);
-  start = Date.now();
+  //console.log("target array in %dms", Date.now() - start);
+  //start = Date.now();
 
   const SourceRead = 0, TargetRead = 1, SourceCopy = 2, TargetCopy = 3;
   let outputOffset = 0, sourceRelativeOffset = 0, targetRelativeOffset = 0;
@@ -126,13 +126,13 @@ const create = (source: Uint8Array, target: Uint8Array) => {
     }
   }
   flush();
-  console.log("loop in %dms", Date.now() - start);
-  start = Date.now();
+  //console.log("loop in %dms", Date.now() - start);
+  //start = Date.now();
 
   write32(crc32(source));
   write32(crc32(target));
   write32(crc32(beat));
-  console.log("footer in %dms", Date.now() - start);
+  //console.log("footer in %dms", Date.now() - start);
 
   return new Uint8Array(beat);
 }

@@ -44,7 +44,7 @@ jobs:
             diff $1 patched.cpp
             rm patched.cpp
             bun run beat.ts -create:bps ts_patch.bps a.txt $1
-            diff cpp_patch.bps ts_patch.bps && echo '$1 compress passed'
+            diff cpp_patch.bps ts_patch.bps && echo "$1 compress passed"
           }
           compress_test beat-cpp/beat/beat.cpp || exit 1
           compress_test beat-cpp/hiro/hiro.cpp || exit 1
