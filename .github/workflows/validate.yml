@@ -68,12 +68,7 @@ jobs:
           }
           patch_test beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png || exit 1
           patch_test beat-cpp/beat/beat.hpp beat-cpp/beat/beat.cpp || exit 1
-          beat-cpp/beat/out/beat -create:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
-          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico patched.png
-          diff beat-cpp/beat/resource/beat.png patched.png
-          rm patched.png
-          bun run beat.ts -create:bps ts_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
-          diff cpp_patch.bps ts_patch.bps && echo 'beat.png patch passed'
+          patch_test beat-cpp/hiro/hiro.hpp beat-cpp/hiro/hiro.cpp || exit 1
 
       - name: beat.cpp beat.png - failure
         run: |
