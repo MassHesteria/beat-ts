@@ -39,22 +39,19 @@ jobs:
       - name: beat.cpp - patch
         run: |
           function compress_test {
-            beat-cpp/beat/out/beat -create:bps cpp_patch.bps a.txt $1
-            beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a.txt patched.cpp
+            local org_bytes=$(stat -c%s "$1")
+            beat-cpp/beat/out/beat -create:bps cpp_patch.bps a.txt $1 > /dev/null
+            beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a.txt patched.cpp > /dev/null
             diff $1 patched.cpp
             rm patched.cpp
-            bun run beat.ts -create:bps ts_patch.bps a.txt $1
-            diff cpp_patch.bps ts_patch.bps && echo "$1 compress passed"
+            local pat_bytes=$(stat -c%s "cpp_patch.bps")
+            bun run beat.ts -create:bps ts_patch.bps a.txt $1 > /dev/null
+            diff cpp_patch.bps ts_patch.bps && echo "$1 compress passed: $org_bytes -> $pat_bytes"
           }
           compress_test beat-cpp/beat/beat.cpp || exit 1
           compress_test beat-cpp/hiro/hiro.cpp || exit 1
           compress_test beat-cpp/nall/nall.hpp || exit 1
-          beat-cpp/beat/out/beat -create:bps cpp_patch.bps a.txt beat-cpp/beat/beat.cpp
-          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a.txt patched.cpp
-          diff beat-cpp/beat/beat.cpp patched.cpp
-          rm patched.cpp
-          bun run beat.ts -create:bps ts_patch.bps a.txt beat-cpp/beat/beat.cpp
-          diff cpp_patch.bps ts_patch.bps && echo 'beat.cpp patch passed'
+          compress_test beat-cpp/beat/out/beat || exit 1
 
       - name: beat.png - patch
         run: |
