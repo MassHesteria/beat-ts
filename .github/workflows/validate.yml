@@ -77,7 +77,7 @@ jobs:
           beat-cpp/beat/out/beat -create:bps cpp_patch.bps a1.txt a2.txt > /dev/null
           beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a1.txt patched.file > /dev/null
           diff a2.txt patched.file
-          local pat_bytes=$(stat -c%s "cpp_patch.bps")
+          pat_bytes=$(stat -c%s "cpp_patch.bps")
           bun run beat.ts -create:bps ts_patch.bps $1 $2 > /dev/null
           diff cpp_patch.bps ts_patch.bps && echo "Fonzie Test passed, size = $pat_bytes"
 
