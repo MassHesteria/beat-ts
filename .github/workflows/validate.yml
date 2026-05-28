@@ -70,6 +70,17 @@ jobs:
           patch_test beat-cpp/beat/beat.hpp beat-cpp/beat/beat.cpp || exit 1
           patch_test beat-cpp/hiro/hiro.hpp beat-cpp/hiro/hiro.cpp || exit 1
 
+      - name: Fonzie Test
+        run: |
+          dd if=/dev/zero bs=1 count=1024 | tr '\0' 'a' > a1.txt
+          dd if=/dev/zero bs=1 count=10240 | tr '\0' 'a' > a2.txt
+          beat-cpp/beat/out/beat -create:bps cpp_patch.bps a1.txt a2.txt > /dev/null
+          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a1.txt patched.file > /dev/null
+          diff a2.txt patched.file
+          local pat_bytes=$(stat -c%s "cpp_patch.bps")
+          bun run beat.ts -create:bps ts_patch.bps $1 $2 > /dev/null
+          diff cpp_patch.bps ts_patch.bps && echo "Fonzie Test passed, size = $pat_bytes"
+
       - name: beat.cpp beat.png - failure
         run: |
           beat-cpp/beat/out/beat -create:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
