@@ -74,11 +74,11 @@ jobs:
         run: |
           dd if=/dev/zero bs=1 count=1024 | tr '\0' 'a' > a1.txt
           dd if=/dev/zero bs=1 count=10240 | tr '\0' 'a' > a2.txt
-          beat-cpp/beat/out/beat -create:bps cpp_patch.bps a1.txt a2.txt > /dev/null
-          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a1.txt patched.file > /dev/null
+          beat-cpp/beat/out/beat -create:bps cpp_patch.bps a1.txt a2.txt
+          beat-cpp/beat/out/beat -apply:bps cpp_patch.bps a1.txt patched.file
           diff a2.txt patched.file
           pat_bytes=$(stat -c%s "cpp_patch.bps")
-          bun run beat.ts -create:bps ts_patch.bps $1 $2 > /dev/null
+          bun run beat.ts -create:bps ts_patch.bps a1.txt a2.txt
           diff cpp_patch.bps ts_patch.bps && echo "Fonzie Test passed, size = $pat_bytes"
 
       - name: beat.cpp beat.png - failure
