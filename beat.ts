@@ -152,6 +152,37 @@ if (args.includes("-create:bps")) {
   await Bun.write(patchFile, patchData);
   console.log("patch created successfully");
 
+} else if (args.includes("-cc")) {
+  const index = args.indexOf("-cc");
+  const patchFile = args[index + 1];
+  const modifiedName = args[index + 2];
+  if (patchFile === undefined || modifiedName === undefined) {
+    console.log("Error: Missing arguments for -cc. Usage: -cc <patchFile> <modifiedFile>");
+    process.exit(1);
+  }
+  const uint32 = new Uint32Array(crcTable);
+  const originalData = new Uint8Array(uint32.length * 4);
+  const view = new DataView(originalData.buffer);
+
+  // Step through the array and write each Uint32 as Big-Endian
+  uint32.forEach((value, index) => {
+    view.setUint32(index * 4, value, false); // false = Big-Endian
+  });
+  const modifiedData = await Bun.file(modifiedName).bytes();
+  const patchData = create(originalData, modifiedData);
+  await Bun.write(patchFile, patchData);
+  console.log("patch created successfully");
+  
+} else if (args.includes("-crcTable")) {
+  const uint32 = new Uint32Array(crcTable);
+  const bytes = new Uint8Array(uint32.length * 4);
+  const view = new DataView(bytes.buffer);
+
+  // Step through the array and write each Uint32 as Big-Endian
+  uint32.forEach((value, index) => {
+    view.setUint32(index * 4, value, false); // false = Big-Endian
+  });
+  await Bun.write("crcTable.bin", bytes);
 } else if (args.includes("-apply:bps")) {
   console.log("UNIMPLEMENTED: Applying bps...");
 } else {
