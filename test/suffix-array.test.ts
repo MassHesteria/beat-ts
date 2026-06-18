@@ -13,9 +13,10 @@ test("triple", () => {
   expect(induced_sort([97, 98, 97])).toEqual([3, 2, 0, 1]);
 });
 
-//test("complex", () => {
-  //const res = induced_sort([97, 97, 97, 98, 97, 97, 99, 97, 97, 97, 98, 97, 97]);
+test("complex", () => {
+  // aaabaacaaaabaa
+  const res = induced_sort([97, 97, 97, 98, 97, 97, 99, 97, 97, 97, 97, 98, 97, 97]);
   //console.log(res)
-  //expect(res).toEqual([13, 12, 0, 7, 1, 8, 3, 10, 4, 11, 2, 9, 6, 5])
-//})
+  expect(res).toEqual([14, 13, 12, 7, 8, 0, 9, 1, 4, 10, 2, 5, 11, 3, 6])
+})
 
