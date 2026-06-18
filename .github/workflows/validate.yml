@@ -13,6 +13,10 @@ jobs:
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
 
+      - name: Unit Tests
+        run: |
+          bun test
+
       - name: Checkout code
         uses: actions/checkout@v6.0.2
         with:
