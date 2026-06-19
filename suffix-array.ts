@@ -81,8 +81,8 @@ export const suffix_array_previous = (sa: SuffixArray, address: number): { lengt
   };
 }
 
+//O(n) time, O(n) space implementation of SA-IS algorithm for suffix array construction
 export const induced_sort = (data: Uint8Array | number[], characters: number = 256): number[] => {
-  //const start = Date.now();
   const size = data?.length ?? 0;
   if(size == 0) return [0];  //required to avoid out-of-bounds accesses
   if(size == 1) return [1, 0];  //not strictly necessary; but more performant
@@ -103,8 +103,6 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
       types[n] = types[n + 1];  //this suffix will be the same as the one after it
     }
   }
-  //console.log(types.map(x => x ? 1 : 0).join(""));
-  //console.log("type array in %dms", Date.now() - start);
 
   //left-most S-suffix
   const isLMS = (n: number): boolean => {
@@ -134,8 +132,6 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
     const cnt = counts[idx] as number;
     counts[idx] = cnt + 1;
   }
-  //console.log(counts.join(""));
-  //console.log("count array in %dms", Date.now() - start);
 
   //bucket sorting start offsets
   const heads: number[] = new Array(characters).fill(0);
@@ -172,11 +168,9 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
     suffixes[ti] = n;  //advance from the tail of the bucket
     tails[di] = ti - 1;
   }
-  //console.log("init suffixes in %dms", Date.now() - start);
 
   suffixes[0] = size;  //the empty suffix is always an LMS-suffix, and is the first suffix
 
-  //console.log(suffixes.join(""));
   //sort all L-suffixes to the left of LMS-suffixes
   const sortL = () => {
     getHeads();
@@ -202,10 +196,7 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
   };
 
   sortL();
-  //console.log(suffixes.join(""));
   sortS();
-  //console.log(suffixes.join(""));
-  //console.log("sort suffixes in %dms", Date.now() - start);
 
   //analyze data for the summary suffix array
   const names: number[] = new Array(size + 1).fill(-1);
@@ -226,8 +217,6 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
     lastLMSOffset = offset;  //keep track of the new most-recent LMS suffix
     names[lastLMSOffset] = currentName;  //store the LMS suffix name where the suffix appears at in the original data
   }
-  //console.log(names.join(""));
-  //console.log("names in %dms", Date.now() - start);
 
   const summaryOffsets: number[] = [];
   const summaryData: number[] = [];
@@ -238,9 +227,6 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
     summaryData.push(names[n]);
   }
   const summaryCharacters = currentName + 1;  //zero-indexed, so the total unique characters is currentName + 1
-  //console.log(summaryCharacters.toString());
-  //console.log(summaryData.join(""));
-  //console.log(summaryOffsets.join(""));
 
   //make the summary suffix array
   let summaries: number[];
@@ -257,7 +243,6 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
     //recurse until every character in summaryData is unique ...
     summaries = induced_sort(summaryData, summaryCharacters);
   }
-  //console.log("summaries in %dms", Date.now() - start);
 
   suffixes.fill(-1);  //reuse existing buffer for accurate sort
 
@@ -271,11 +256,9 @@ export const induced_sort = (data: Uint8Array | number[], characters: number = 2
   }
   suffixes[0] = size;  //always include the empty suffix at the beginning
 
+  //sort again
   sortL();
-  //console.log(suffixes.join(""));
   sortS();
-  //console.log(suffixes.join(""));
-  //console.log("final suffixes in %dms", Date.now() - start);
 
   return suffixes;
 }
