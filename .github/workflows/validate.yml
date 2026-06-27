@@ -85,6 +85,25 @@ jobs:
           bun run beat.ts -create:bps ts_patch.bps a1.txt a2.txt
           diff cpp_patch.bps ts_patch.bps && echo "Fonzie Test passed, size = $pat_bytes"
 
+      - name: c/d Tests
+        run: |
+          function patch_test {
+            beat-cpp/beat/out/beat -create:bps cpp_patch.bps $1 $2 > /dev/null
+            beat-cpp/beat/out/beat -apply:bps cpp_patch.bps $1 patched.file > /dev/null
+            diff $2 patched.file
+            rm patched.file
+            bun run beat.ts -create:bps ts_patch.bps $1 $2 > /dev/null
+            diff cpp_patch.bps ts_patch.bps && echo "$1 -> $2 passed"
+          }
+          dd if=/dev/zero bs=1 count=1024 | tr '\0' 'c' > c.txt
+          dd if=/dev/zero bs=1 count=1024 | tr '\0' 'd' > d.txt
+          cp c.txt cd.txt
+          cat d.txt >> cd.txt
+          patch_test cd.txt c.txt || exit 1
+          patch_test cd.txt d.txt || exit 1
+          patch_test c.txt cd.txt || exit 1
+          patch_test d.txt cd.txt || exit 1
+
       - name: beat.cpp beat.png - failure
         run: |
           beat-cpp/beat/out/beat -create:bps cpp_patch.bps beat-cpp/beat/resource/beat.ico beat-cpp/beat/resource/beat.png
