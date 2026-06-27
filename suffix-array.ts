@@ -113,12 +113,11 @@ export const suffix_array = (data: Uint8Array, lpf: boolean = false, alt: boolea
     [ arr.lengths, arr.offsets ] = suffixArrayLPF(data, arr.sa);
   }
   else if (lpf) {
-    [ arr.lengths, arr.offsets ] = suffixArrayLPF(data, arr.sa);
     // longest previous factor
     // O(n)
-    //arr.lengths = new Array(data.length + 1);
-    //arr.offsets = new Array(data.length + 1);
-    //suffix_array_lpf(arr.sa, arr.lengths, arr.offsets, data);
+    arr.lengths = new Array(data.length + 1);
+    arr.offsets = new Array(data.length + 1);
+    suffix_array_lpf(arr.sa, arr.lengths, arr.offsets, data);
   }
   return arr;
 };
