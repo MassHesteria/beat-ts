@@ -5,19 +5,120 @@ export type SuffixArray = {
   offsets?: number[];
 };
 
+type LPFResult = number[][]
+
+export function suffixArrayLPF(input: Uint8Array, sa: number[]): LPFResult {
+  const n = input.length;
+
+  if (sa.length !== n + 1) {
+    throw new Error("Expected suffix array to include the empty suffix, so sa.length must be input.length + 1");
+  }
+
+  const rank = new Array<number>(n + 1);
+  for (let i = 0; i <= n; i++) {
+    rank[sa[i]] = i;
+  }
+
+  // Kasai-style LCP array:
+  // lcp[r] = LCP(sa[r], sa[r - 1])
+  const lcp = new Array<number>(n + 1).fill(0);
+
+  let k = 0;
+  for (let i = 0; i < n; i++) {
+    const r = rank[i];
+
+    if (r === 0) {
+      k = 0;
+      continue;
+    }
+
+    const j = sa[r - 1];
+
+    while (i + k < n && j + k < n && input[i + k] === input[j + k]) {
+      k++;
+    }
+
+    lcp[r] = k;
+
+    if (k > 0) {
+      k--;
+    }
+  }
+
+  const lengths = new Array<number>(n + 1).fill(0);
+  const offsets = new Array<number>(n + 1).fill(-1);
+
+  // Standard iterative LPF:
+  // For each suffix i, scan left and right in SA order while the running
+  // minimum LCP can still improve the LPF.
+  for (let i = 0; i < n; i++) {
+    const r = rank[i];
+
+    let bestLength = 0;
+    let bestOffset = -1;
+
+    // Look left in suffix-array order.
+    let minLcp = Number.POSITIVE_INFINITY;
+    for (let p = r; p > 0; p--) {
+      minLcp = Math.min(minLcp, lcp[p]);
+
+      if (minLcp <= bestLength) {
+        break;
+      }
+
+      const j = sa[p - 1];
+
+      if (j < i) {
+        bestLength = minLcp;
+        bestOffset = j;
+      }
+    }
+
+    // Look right in suffix-array order.
+    minLcp = Number.POSITIVE_INFINITY;
+    for (let p = r + 1; p <= n; p++) {
+      minLcp = Math.min(minLcp, lcp[p]);
+
+      if (minLcp <= bestLength) {
+        break;
+      }
+
+      const j = sa[p];
+
+      if (j < i) {
+        bestLength = minLcp;
+        bestOffset = j;
+      }
+    }
+
+    lengths[i] = bestLength;
+    offsets[i] = bestOffset;
+  }
+
+  // Empty suffix has no previous factor.
+  lengths[n] = 0;
+  offsets[n] = -1;
+
+  return [ lengths, offsets ];
+}
+
 // suffix array via induced sorting
 // O(n)
-export const suffix_array = (data: Uint8Array, lpf: boolean = false): SuffixArray => {
+export const suffix_array = (data: Uint8Array, lpf: boolean = false, alt: boolean = false): SuffixArray => {
   const arr: SuffixArray = {
     input: data,
     sa: induced_sort(data),
   };
-  if (lpf) {
+  if (lpf && alt) {
+    [ arr.lengths, arr.offsets ] = suffixArrayLPF(data, arr.sa);
+  }
+  else if (lpf) {
+    [ arr.lengths, arr.offsets ] = suffixArrayLPF(data, arr.sa);
     // longest previous factor
     // O(n)
-    arr.lengths = new Array(data.length + 1);
-    arr.offsets = new Array(data.length + 1);
-    suffix_array_lpf(arr.sa, arr.lengths, arr.offsets, data);
+    //arr.lengths = new Array(data.length + 1);
+    //arr.offsets = new Array(data.length + 1);
+    //suffix_array_lpf(arr.sa, arr.lengths, arr.offsets, data);
   }
   return arr;
 };
@@ -81,7 +182,11 @@ export const suffix_array_previous = (sa: SuffixArray, address: number): { lengt
   };
 }
 
-//O(n) time, O(n) space implementation of SA-IS algorithm for suffix array construction
+// --------------------------------------------------------------------------------------------
+// O(n) time, O(n) space implementation of SA-IS algorithm for suffix array construction
+//
+// We use this because the brute force solution is not viable
+// --------------------------------------------------------------------------------------------
 export const induced_sort = (data: Uint8Array | number[], characters: number = 256): number[] => {
   const size = data?.length ?? 0;
   if(size == 0) return [0];  //required to avoid out-of-bounds accesses
